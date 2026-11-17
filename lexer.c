@@ -38,3 +38,30 @@ typedef struct {
 	int line;
 } Lexer;
 
+void lexerInit(Lexer *l, const char *source) {
+	l->start=source;
+	l->current=source;
+	l->line=1;
+}
+
+static bool isAtEnd(Lexer *l) {
+	return *l->current=='\0';
+}
+
+static char peek(Lexer *l) {
+	return *l->current;
+}
+
+// to check the next char (eg: to determine if / or //)
+static char peekNext(Lexer *l) {
+	if(isAtEnd(l)) return '\0';
+	return *(l->current+1);
+}
+
+static bool matchExpected(Lexer *l, char expected) {
+	if(isAtEnd(l)) return false;
+	if(*l->current!=expected) return false;
+	l->current++;
+	return true;
+}
+
