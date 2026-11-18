@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef enum {
 	TOK_LPAREN, TOK_RPAREN,
@@ -37,4 +38,46 @@ typedef struct {
 	const char *current;
 	int line;
 } Lexer;
+
+void lexerInit(Lexer *l, const char *source) {
+	l->start=source;
+	l->current=source;
+	l->line=1;
+}
+
+static bool isAtEnd(Lexer *l) {
+	return *l->current=='\0';
+}
+
+static char peek(Lexer *l) {
+	return *l->current;
+}
+
+// to check the next char (eg: to determine if / or //)
+static char peekNext(Lexer *l) {
+	if(isAtEnd(l)) return '\0';
+	return *(l->current+1);
+}
+
+static bool matchExpected(Lexer *l, char expected) {
+	if(isAtEnd(l)) return false;
+	if(*l->current!=expected) return false;
+	l->current++;
+	return true;
+}
+
+static char advanceChar(Lexer *l) {
+	char c=*l->current;
+	l->current++;
+	return c;
+}
+
+static Token makeToken(Lexer *l, TokenType type) {
+	Token token;
+	token.type=type;
+	token.start=l->start;
+	token.length=(int)(l->current)-(l->start); // to handle 'ptrdiff_t'
+	token.line=l->line;
+	return token;
+}
 
