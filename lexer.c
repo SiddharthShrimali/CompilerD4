@@ -76,8 +76,59 @@ static Token makeToken(Lexer *l, TokenType type) {
 	Token token;
 	token.type=type;
 	token.start=l->start;
-	token.length=(int)(l->current)-(l->start); // to handle 'ptrdiff_t'
+	token.length=(int)(l->current - l->start); // to handle 'ptrdiff_t'
 	token.line=l->line;
 	return token;
+}
+
+static Token errorToken(Lexer *l, const char *message) {
+	Token token;
+	token.type=TOK_ERROR;
+	token.start=message;
+	token.length=(int)strlen(message);
+	token.line=l->line;
+	return token;
+}
+
+Token scanToken(Lexer *l) {
+	for(;;) {
+		l->start=l->current;
+
+		if(isAtEnd(l)) return makeToken(l, TOK_EOF);
+
+		char c=advanceChar(l);
+
+		switch(c) {
+			// skip space and tab space
+			case ' ':
+			case '\t':
+				break;
+
+			case '\n':
+				l->line++;
+				break;
+
+			// single chars
+			case '(': return makeToken(l, TOK_LPAREN);
+			case ')': return makeToken(l, TOK_RPAREN);
+			case '{': return makeToken(l, TOK_LBRACE);
+			case '}': return makeToken(l, TOK_RBRACE);
+			case ';': return makeToken(l, TOK_SEMICOLON);
+			case '+': return makeToken(l, TOK_PLUS);
+			case '-': return makeToken(l, TOK_MINUS);
+			case '*': return makeToken(l, TOK_STAR);
+
+			// division/comment
+			case '/':
+				if(matchExpected(l, '/')) {
+					while(peek(l)!='\n'&&!isAtEnd(l)) {
+						advanceChar(l);
+					}
+					continue;
+				}
+				return makeToken(l, TOK_SLASH);
+		}
+		return makeToken(l, "Unexpected character");
+	}
 }
 
