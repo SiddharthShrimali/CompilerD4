@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <stdbool.h>
 
 typedef enum {
 	TOK_LPAREN, TOK_RPAREN,
@@ -63,5 +64,20 @@ static bool matchExpected(Lexer *l, char expected) {
 	if(*l->current!=expected) return false;
 	l->current++;
 	return true;
+}
+
+static char advanceChar(Lexer *l) {
+	char c=*l->current;
+	l->current++;
+	return c;
+}
+
+static Token makeToken(Lexer *l, TokenType type) {
+	Token token;
+	token.type=type;
+	token.start=l->start;
+	token.length=(int)(l->current)-(l->start); // to handle 'ptrdiff_t'
+	token.line=l->line;
+	return token;
 }
 
